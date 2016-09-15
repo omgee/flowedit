@@ -1,80 +1,91 @@
-var view = (function(){
-    var id = document.getElementById('view');
-    // Magic
-    id.width = window.innerWidth;
-    id.height = window.innerHeight;
-    // Magic
-    var x, y;
-    var oX = 0;
-    var oY = 0;
-    var grab = false;
-    var getMousePosition = function(event) {
-        x = event.offsetX;
-        y = event.offsetY;
-    }
-    id.onmousemove = getMousePosition;
-    var click = function(event) {
+// Initialization
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext('2d');
+var fps = document.getElementById('fps');
+var width = window.innerWidth;
+var height = window.innerHeight;
 
+// Change Canvas size
+canvas.width = width;
+canvas.height = height;
+
+// Rendering function
+function render() {
+    if (!lastTime) {
+        lastTime = Date.now();
+        fps = 0;
     }
-    var down = function(event) {
-        x = event.offsetX;
-        y = event.offsetY;
-        grab = true;
+
+    canvas.width = canvas.width;
+
+    drawGrid(32);
+
+    delta = (Date.now() - lastTime) / 1000;
+    lastTime = Date.now();
+    fps = 1 / delta;
+
+    requestAnimationFrame(render);
+}
+
+// Grid draw function (block size in px)
+function drawGrid(size) {
+    context.fillStyle = "silver";
+
+    for (var i = 0; i <= width / size; i++) {
+        context.fillRect(i * size + (x % size), 0, 1, height);
     }
-    var move = function(event) {
-        if (!grab) return;
-        oX = x - event.offsetX;
-        oY = y - event.offsetY;
-        console.log(oX + " " + oY);
+
+    for (var i = 0; i <= height / size; i++) {
+        context.fillRect(0, i * size + (y % size), width, 1);
     }
-    var up = function(event) {
-        grab = false;
-    }
-    id.onmousemove = move;
-    id.onmousedown = down;
-    id.onmouseup = up;
-    id.onclick = click;
-    return {
-        oX: oX,
-        oY: oY,
-        w: id.width,
-        h: id.height,
-        layer: id.getContext('2d')
-    }
-})();
-var object = (function(){
-    var grid = function(size) {
-        view.layer.fillStyle = "#C0C0C0";
-        for (var i = 0; i < view.w / size; i++) {
-            view.layer.fillRect((i * size) + view.oX, view.oY, 1, view.h);
-        }
-        for (var k = 0; k < view.h / size; k++) {
-            view.layer.fillRect(view.oX, (k * size) + view.oY, view.w, 1);
-        }
-    }
-    return {
-        grid: grid
-    }
-})();
-var render = (function(){
-    var last = Date.now(), fps = 0;
-    var init = function() {
-        frame();
-    }
-    var frame = function() {
-        view.layer.clearRect(0, 0, view.w, view.h);
-        object.grid(32);
-        delta = (new Date().getTime() - last) / 1000;
-        last = Date.now();
-        fps = 1 / delta;
-        requestAnimationFrame(frame);
-    }
-    var showFps = function() {
-        console.log(Math.floor(fps));
-    }
-    setInterval(showFps, 1000);
-    return {
-        init: init
-    }
-})();
-render.init();
+}
+
+// Grab offset
+var grab = false;
+var x = 0;
+var y = 0;
+var lastX = 0;
+var lastY = 0;
+var tmpX = 0;
+var tmpY = 0;
+
+// Grab functions
+function down(e) {
+    grab = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    tmpX = x;
+    tmpY = y;
+}
+
+function move(e) {
+    if (!grab) return;
+
+    x = tmpX + e.clientX - lastX;
+    y = tmpY + e.clientY - lastY;
+}
+
+function up(e) {
+    grab = false;
+}
+
+// Assign grab functions
+canvas.onmousedown = down;
+canvas.onmousemove = move;
+canvas.onmouseup = up;
+
+// Calculate and show fps (Rendering function)
+var lastTime, fps, delta;
+
+function showFps() {
+    document.getElementById('fps').innerHTML = Math.floor(fps);
+}
+
+setInterval(showFps, 100);
+
+// Objects initialization
+var objects = [];
+
+
+// Start render
+render();
