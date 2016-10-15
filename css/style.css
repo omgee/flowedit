@@ -19,6 +19,9 @@ a {
     font-family: monospace;
     cursor: pointer;
 }
+a img {
+    cursor: pointer;
+}
 a:hover {
     background-color: rgba(0, 0, 0, 0.2);
 }
