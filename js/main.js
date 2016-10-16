@@ -19,6 +19,7 @@ function render() {
     canvas.width = canvas.width;
 
     drawGrid(32);
+    drawLines();
     drawObjects();
 
     delta = (Date.now() - lastTime) / 1000;
@@ -45,12 +46,15 @@ function drawGrid(size) {
         context.lineTo(width, tmp);
     }
 
+    context.strokeStyle = "silver";
     context.stroke();
 }
 
 // Grab offset
 var grab = false;
 var grabObject = false;
+var add = false;
+var addCount = 0;
 var x = 0;
 var y = 0;
 var lastX = 0;
@@ -61,6 +65,8 @@ var oX = 0;
 var oY = 0;
 
 // Grab functions
+var s;
+var f;
 function down(e) {
     grab = true;
     lastX = e.clientX;
@@ -70,6 +76,21 @@ function down(e) {
     grabObject = isObject(lastX, lastY);
     oX = objects[currentObject][6];
     oY = objects[currentObject][7];
+    if (add) {
+        if (addCount == 0 && isObject(lastX, lastY)) {
+            f = currentObject;
+        }
+        else if (addCount == 1 && isObject(lastX, lastY)) {
+            s = currentObject;
+        }
+        addCount++;
+        if (addCount == 2) {
+            addCount = 0;
+            add = false;
+            console.log(s, f);
+            lines.push([f, s]);
+        }
+    }
 }
 
 function move(e) {
@@ -104,7 +125,40 @@ setInterval(showFps, 100);
 
 // Objects initialization
 var objects = [];
+var lines = [];
 var currentObject;
+
+//
+function drawLines() {
+    context.beginPath();
+
+    lines.forEach(function(e) {
+        var first = {
+            x: objects[e[0]][1] + objects[e[0]][3] / 2 + this.x + objects[e[0]][6],
+            y: objects[e[0]][2] + objects[e[0]][4] / 2 + this.y + objects[e[0]][7]
+        };
+        var second = {
+            x: objects[e[1]][1] + objects[e[1]][3] / 2 + this.x + objects[e[1]][6],
+            y: objects[e[1]][2] + objects[e[1]][4] / 2 + this.y + objects[e[1]][7]
+        };
+        context.moveTo(first.x, first.y);
+        context.lineTo(second.x, second.y);
+    });
+
+    context.strokeStyle = "black";
+    context.lineWidth = 2;
+    context.stroke();
+}
+
+// Draw single line
+function drawLine(x1, y1, x2, y2) {
+    context.beginPath();
+
+    context.moveTo(x1, y1);
+    context.lineTo(x2, y2);
+
+    context.stroke();
+}
 
 // Add object
 function addObject(type, x, y, w, h) {
@@ -142,20 +196,21 @@ function drawObject(type, x, y, w, h, text, oX, oY) {
             break;
         case 2: // Insert
             context.moveTo(x, y + h);
-            context.lineTo(x + w - 64, y + h);
+            context.lineTo(x + w - 32, y + h);
             context.lineTo(x + w, y);
-            context.lineTo(x + 64, y);
+            context.lineTo(x + 32, y);
             context.closePath();
             break;
     }
 
-    context.lineWidth = 3;
+    context.lineWidth = 2;
 
     context.fillStyle = "#fff";
+    context.strokeStyle = "black";
     context.fill();
     context.stroke();
     context.fillStyle = "black";
-    context.font = "32px monospace";
+    context.font = "16px monospace";
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(text, x + w / 2, y + h / 2);
@@ -183,7 +238,6 @@ function isObject(mX, mY) {
             y = objects[i][2] + this.y + objects[i][7],
             w = objects[i][3],
             h = objects[i][4];
-        console.log(x, y, objects[i][6], objects[i][7]);
         if (mX >= x && mX <= x + w && mY >= y && mY <= y + h) {
             currentObject = i;
             return true;
@@ -199,7 +253,7 @@ function moveObject(x, y, oX, oY) {
 
 // Add line
 function addLine() {
-    
+    add = true;
 }
 
 // Start render
