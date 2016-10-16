@@ -57,6 +57,8 @@ var lastX = 0;
 var lastY = 0;
 var tmpX = 0;
 var tmpY = 0;
+var oX = 0;
+var oY = 0;
 
 // Grab functions
 function down(e) {
@@ -65,11 +67,17 @@ function down(e) {
     lastY = e.clientY;
     tmpX = x;
     tmpY = y;
-    grabObject = isObject();
+    grabObject = isObject(lastX, lastY);
+    oX = objects[currentObject][6];
+    oY = objects[currentObject][7];
 }
 
 function move(e) {
     if (!grab) return;
+    if (grabObject) {
+        moveObject(e.clientX - lastX, e.clientY - lastY, oX, oY);
+        return;
+    }
 
     x = tmpX + e.clientX - lastX;
     y = tmpY + e.clientY - lastY;
@@ -96,10 +104,14 @@ setInterval(showFps, 100);
 
 // Objects initialization
 var objects = [];
+var currentObject;
 
 // Add object
 function addObject(type, x, y, w, h) {
-    objects.push([type, x, y, w, h, prompt("Введите текст")]);
+    context.font = "32px monospace";
+    var text = prompt("Введите текст");
+    w = context.measureText(text).width + 32;
+    objects.push([type, x, y, w, h, text, 0, 0]);
 }
 
 // Delete last
@@ -108,16 +120,18 @@ function deleteObject() {
 }
 
 // Simple object
-function drawObject(type, x, y, w, h, text) {
+function drawObject(type, x, y, w, h, text, oX, oY) {
     context.beginPath();
+    x += oX + this.x;
+    y += oY + this.y;
 
     switch(type) {
         case 0: // Box
-            context.moveTo(x + this.x, y + this.y);
-            context.lineTo(x + this.x + w, y + this.y);
-            context.lineTo(x + this.x + w, y + this.y + h);
-            context.lineTo(x + this.x, y + this.y + h);
-            context.lineTo(x + this.x, y + this.y);
+            context.moveTo(x, y);
+            context.lineTo(x + w, y);
+            context.lineTo(x + w, y + h);
+            context.lineTo(x, y + h);
+            context.lineTo(x, y);
             break;
         case 1: // Ромб
             context.moveTo(x, y + h / 2);
@@ -144,7 +158,7 @@ function drawObject(type, x, y, w, h, text) {
     context.font = "32px monospace";
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText(text, x + w / 2 + this.x, y + h / 2 + this.y);
+    context.fillText(text, x + w / 2, y + h / 2);
 }
 
 // Draw objects
@@ -155,9 +169,37 @@ function drawObjects() {
                y = e[2],
                w = e[3],
                h = e[4],
-            text = e[5];
-        drawObject(type, x, y, w, h, text);
+            text = e[5],
+              oX = e[6],
+              oY = e[7];
+        drawObject(type, x, y, w, h, text, oX, oY);
     });
+}
+
+// Is object
+function isObject(mX, mY) {
+    for (var i = 0; i < objects.length; i++) {
+        var x = objects[i][1] + this.x + objects[i][6],
+            y = objects[i][2] + this.y + objects[i][7],
+            w = objects[i][3],
+            h = objects[i][4];
+        console.log(x, y, objects[i][6], objects[i][7]);
+        if (mX >= x && mX <= x + w && mY >= y && mY <= y + h) {
+            currentObject = i;
+            return true;
+        }
+    }
+}
+
+// Move object
+function moveObject(x, y, oX, oY) {
+    objects[currentObject][6] = x + oX;
+    objects[currentObject][7] = y + oY;
+}
+
+// Add line
+function addLine() {
+    
 }
 
 // Start render
