@@ -135,28 +135,43 @@ function drawLines() {
     lines.forEach(function(e) {
         var first = {
             x: objects[e[0]][1] + objects[e[0]][3] / 2 + this.x + objects[e[0]][6],
-            y: objects[e[0]][2] + objects[e[0]][4] / 2 + this.y + objects[e[0]][7]
+            y: objects[e[0]][2] + objects[e[0]][4] / 2 + this.y + objects[e[0]][7],
+            w: objects[e[0]][3],
+            h: objects[e[0]][4]
         };
         var second = {
             x: objects[e[1]][1] + objects[e[1]][3] / 2 + this.x + objects[e[1]][6],
-            y: objects[e[1]][2] + objects[e[1]][4] / 2 + this.y + objects[e[1]][7]
+            y: objects[e[1]][2] + objects[e[1]][4] / 2 + this.y + objects[e[1]][7],
+            w: objects[e[1]][3],
+            h: objects[e[1]][4]
         };
-        context.moveTo(first.x, first.y);
-        context.lineTo(second.x, second.y);
+
+        var halfX = (first.x - second.x) / 2;
+        var halfY = Math.abs(first.y - second.y) / 2;
+
+        if (first.y < second.y) {
+            context.moveTo(first.x, first.y);
+            context.lineTo(first.x, first.y + halfY);
+            context.moveTo(second.x, second.y);
+            context.lineTo(second.x, second.y - halfY);
+            context.lineTo(first.x, second.y - halfY);
+        }
+        else {
+            context.moveTo(first.x, first.y);
+            context.lineTo(first.x, first.y + first.h);
+            context.moveTo(second.x, second.y);
+            context.lineTo(second.x, second.y - second.h);
+            context.lineTo(second.x + halfX, second.y - second.h);
+            context.lineTo(second.x + halfX, first.y + first.h);
+            context.lineTo(first.x, first.y + first.h);
+        }
+
+        // context.moveTo(first.x, first.y);
+        // context.lineTo(second.x, second.y);
     });
 
     context.strokeStyle = "black";
     context.lineWidth = 2;
-    context.stroke();
-}
-
-// Draw single line
-function drawLine(x1, y1, x2, y2) {
-    context.beginPath();
-
-    context.moveTo(x1, y1);
-    context.lineTo(x2, y2);
-
     context.stroke();
 }
 
