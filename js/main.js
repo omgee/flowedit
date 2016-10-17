@@ -1,7 +1,6 @@
 // Initialization
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
-var fps = document.getElementById('fps');
 var width = window.innerWidth;
 var height = window.innerHeight;
 
@@ -11,10 +10,6 @@ canvas.height = height;
 
 // Rendering function
 function render() {
-    if (!lastTime) {
-        lastTime = Date.now();
-        fps = 0;
-    }
 
     canvas.width = canvas.width;
 
@@ -22,11 +17,7 @@ function render() {
     drawLines();
     drawObjects();
 
-    delta = (Date.now() - lastTime) / 1000;
-    lastTime = Date.now();
-    fps = 1 / delta;
-
-    requestAnimationFrame(render);
+    // requestAnimationFrame(render);
 }
 
 // Grid draw function (block size in px)
@@ -89,6 +80,9 @@ function down(e) {
             add = false;
             console.log(s, f);
             lines.push([f, s]);
+
+            render();
+
         }
     }
 }
@@ -97,11 +91,16 @@ function move(e) {
     if (!grab) return;
     if (grabObject) {
         moveObject(e.clientX - lastX, e.clientY - lastY, oX, oY);
+
+        render();
+
         return;
     }
 
     x = tmpX + e.clientX - lastX;
     y = tmpY + e.clientY - lastY;
+
+    render();
 }
 
 function up(e) {
@@ -113,15 +112,6 @@ function up(e) {
 canvas.onmousedown = down;
 canvas.onmousemove = move;
 canvas.onmouseup = up;
-
-// Calculate and show fps (Rendering function)
-var lastTime, fps, delta;
-
-function showFps() {
-    document.getElementById('fps').innerHTML = Math.floor(fps);
-}
-
-setInterval(showFps, 100);
 
 // Objects initialization
 var objects = [];
@@ -149,7 +139,7 @@ function drawLines() {
         var halfX = (first.x - second.x) / 2;
         var halfY = Math.abs(first.y - second.y) / 2;
 
-        if (first.y < second.y) {
+        if (first.y + first.h < second.y - second.h) {
             context.moveTo(first.x, first.y);
             context.lineTo(first.x, first.y + halfY);
             context.moveTo(second.x, second.y);
@@ -181,12 +171,16 @@ function addObject(type, x, y, w, h) {
     var text = prompt("Введите текст");
     w = context.measureText(text).width + 32;
     objects.push([type, x, y, w, h, text, 0, 0]);
+
+    render();
 }
 
 // Delete last
 function deleteObject() {
     objects.pop();
 }
+
+// TODO: Add all elmenets and optimize line geometry
 
 // Simple object
 function drawObject(type, x, y, w, h, text, oX, oY) {
