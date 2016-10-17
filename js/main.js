@@ -189,25 +189,59 @@ function drawObject(type, x, y, w, h, text, oX, oY) {
     y += oY + this.y;
 
     switch(type) {
-        case 0: // Box
+        case 0: // Процесс
             context.moveTo(x, y);
             context.lineTo(x + w, y);
             context.lineTo(x + w, y + h);
             context.lineTo(x, y + h);
             context.lineTo(x, y);
             break;
-        case 1: // Ромб
+        case 1: // Решение
             context.moveTo(x, y + h / 2);
             context.lineTo(x + w / 2, y);
             context.lineTo(x + w, y + h / 2);
             context.lineTo(x + w / 2, y + h);
             context.closePath();
             break;
-        case 2: // Insert
+        case 2: // Данные
             context.moveTo(x, y + h);
             context.lineTo(x + w - 32, y + h);
             context.lineTo(x + w, y);
             context.lineTo(x + 32, y);
+            context.closePath();
+            break;
+        case 3: // Предопределенный процесс
+            context.moveTo(x, y);
+            context.lineTo(x + w, y);
+            context.lineTo(x + w, y + h);
+            context.lineTo(x, y + h);
+            context.closePath();
+            context.moveTo(x + 16, y);
+            context.lineTo(x + 16, y + h);
+            context.moveTo(x + w - 16, y);
+            context.lineTo(x + w - 16, y + h);
+            break;
+        case 4: // Цикл
+            context.moveTo(x, y + 16);
+            context.lineTo(x + 16, y);
+            context.lineTo(x + w - 16, y);
+            context.lineTo(x + w, y + 16);
+            context.lineTo(x + w, y + h);
+            context.lineTo(x, y + h);
+            context.closePath();
+            break;
+        case 5: // Цикл
+            context.moveTo(x, y);
+            context.lineTo(x + w, y);
+            context.lineTo(x + w, y + h - 16);
+            context.lineTo(x + w - 16, y + h);
+            context.lineTo(x + 16, y + h);
+            context.lineTo(x, y + h - 16);
+            context.closePath();
+            break;
+        case 6: // Терминатор
+            context.arc(x + 16, y + 24, 16, 0.5 * Math.PI, 1.5 * Math.PI);
+            context.arc(x + w - 16, y + 24, 16, 1.5 * Math.PI, 0.5 * Math.PI);
             context.closePath();
             break;
     }
